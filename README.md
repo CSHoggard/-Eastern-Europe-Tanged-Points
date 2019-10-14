@@ -1,2 +1,3 @@
-# -Ivanovaite_et_al_2019
-All these fantastic cultures? Research history and regionalisation in the Late Palaeolithic tanged point cultures of Eastern Europe (European Journal of Archaeology)
+Data and code attributed to "All these fantastic cultures? Research history and regionalisation in the Late Palaeolithic tanged point cultures of Eastern Europe", submitted to the European Journal of Archaeology.
+
+For anymore information please contact C.S.Hoggard@soton.ac.uk
