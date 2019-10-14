@@ -1,5 +1,5 @@
 ### ARTICLE TITLE: All these Fantastic Cultures? Research History and Regionalisation in the Late Palaeolithic Tanged Point Cultures of Eastern Europe ###
-### AUTHORS: Livija Ivanovaite, Kamil Swertka, Christian Steven Hoggard, Florian Sauer and Felix Riede ###
+### AUTHORS: Livija Ivanovaite, Kamil Serwatka, Christian Steven Hoggard, Florian Sauer and Felix Riede ###
 ### SCRIPT AUTHOR: Christian Steven Hoggard ###
 ### SCRIPT CONTACT: C.Hoggard@soton.ac.uk/Christianhoggard@gmail.com ###
 ### LAST EDITED: 14/10/2019 ###
