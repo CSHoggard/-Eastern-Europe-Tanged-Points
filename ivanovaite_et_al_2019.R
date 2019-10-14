@@ -2,7 +2,7 @@
 ### AUTHORS: Livija Ivanovaite, Kamil Swertka, Christian Steven Hoggard, Florian Sauer and Felix Riede ###
 ### SCRIPT AUTHOR: Christian Steven Hoggard ###
 ### SCRIPT CONTACT: C.Hoggard@soton.ac.uk / Christianhoggard@gmail.com ###
-### LAST EDITED: 12/10/2019 ###
+### LAST EDITED: 14/10/2019 ###
 
 ### ABSTRACT ###
 ### The Late Glacial, that is the period from the first pronounced warming ###
@@ -28,19 +28,22 @@
 ### [1] stats     graphics  grDevices utils     datasets 
 ### [6] methods   base    
 
-### FURTHER PARTICULARS:
-### This code was designed for the analytical procedure and for Figures 4,5 and 6. Further 6 was further modified through external editing software ###
-
 ### SCRIPT ###
 ### STAGE 1: DATA COLLECTION AND PACKAGE INSTALLATION --------------------
 
-setwd() ### SET WORKING DIRECTORY (WHERE FILES ARE LOCATED)
+setwd()
 if(!require("ggtree")) install.packages('ggtree', repos='http://cran.us.r-project.org') ### GGTREE 1.16.6
 if(!require("tidyverse")) install.packages('tidyverse', repos='http://cran.us.r-project.org') ### TIDYVERSE 1.2.1
 if(!require("Momocs")) install.packages('Momocs', repos='http://cran.us.r-project.org') ### MOMOCS 1.2.9 
-if(!require("directlabels")) install.packages('directlabels', repos='http://cran.us.r-project.org') ### MOMOCS 1.2.9 
-if(!require("cowplot")) install.packages('cowplot', repos='http://cran.us.r-project.org') ### MOMOCS 1.2.9 
-library("readxl") ### READXL 1.3.1
+if(!require("directlabels")) install.packages('directlabels', repos='http://cran.us.r-project.org') ### DIRECTLABELS 2018.05.22 
+if(!require("cowplot")) install.packages('cowplot', repos='http://cran.us.r-project.org') ### COWPLOT 1.0.0
+if(!require("readxl")) install.packages('readxl', repos='http://cran.us.r-project.org') ### READXL 1.3.1  
+library("ggtree")
+library("tidyverse")
+library("Momocs")
+library("directlabels")
+library("cowplot")
+library("readxl")
 
 dataset <- import_tps("ivanovaite_et_al_2019.tps", curves = TRUE) ### IMPORT .TPS FILE (ORDERED)
 print(dataset)
