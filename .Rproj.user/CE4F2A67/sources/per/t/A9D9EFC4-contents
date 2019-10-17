@@ -1,0 +1,257 @@
+### MASTER SCRIPT: TANGED AND BACKED POINT ANALYSIS ###
+
+### AUTHOR: CHRISTIAN STEVEN HOGGARD ###
+
+### NOTES ###
+### THIS SCRIPT WAS DESIGNED TO EXAMINE AND ANALYSE THE LARGE CORPUS
+### OF TANGED AND BACKED POINT ANALYSIS COLLATED BY MEMBERS OF THE
+### LAPADIS/CLIOARCH TEAM (AARHUS UNIVERSITY). IT INCLUDES THE RAW
+### OUTLINE DATA, MASTER DATABASES AND THE RPHYLIP OUTPUTS (THESE 
+### CAN ALSO BE PRODUCED THROUGH THE CODE BELOW).
+
+### THIS SCRIPT IS UNPUBLISHED AND IS NOT YET STORED ON A GITHUB
+### REPOSITORY OR OPEN SCIENCE FRAMEWORK PROJECT PAGE
+
+### R VERSION: X86_64_W64-MINGW32 (3.6.1) ###
+### R SUBVERSION REVISION NUMBER: 76782 ###
+### ARCHITECTURE: X86_64 ###
+
+### LAST MODIFIED: 26/09/2019
+
+#################################################################
+
+### PACKAGES ###
+
+if(!require("tidyverse")) install.packages('tidyverse', repos='http://cran.us.r-project.org')
+if(!require("Momocs")) install.packages('geomorph', repos='http://cran.us.r-project.org')
+if(!require("ggtree")) install.packages('ggtree', repos='http://cran.us.r-project.org')
+if(!require("ape")) install.packages('ape', repos='http://cran.us.r-project.org')
+if(!require("Rphylip")) install.packages('Rphylip', repos='http://cran.us.r-project.org')
+if(!require("tidytree")) install.packages('tidytree', repos='http://cran.us.r-project.org')
+if(!require("phytools")) install.packages('phytools', repos='http://cran.us.r-project.org')
+if(!require("kohonen")) install.packages('kohonen', repos='http://cran.us.r-project.org')
+
+### STAGE 1: DATA IMPORTING ###
+
+backedpoints <- import_tps("TPS_BP_27_09_2019.tps", curves = TRUE) ### import .tps file
+tangedpoints <- import_tps("TPS_TP_27_09_2019.tps", curves = TRUE) ### import .tps file
+backed.points <- read.csv("backed.points.csv", header = TRUE, sep = ",", encoding = "UTF-8", row.names = 1)
+tanged.points <- read.csv("tanged.points.csv", header = TRUE, sep = ",", encoding = "UTF-8", row.names = 1)
+
+### STAGE 2: DATA TIDYING ###
+
+backed.points$Site <- as.character(backed.points$Site)
+backed.points$Context <- as.character(backed.points$Context)
+
+tanged.points$Site <- as.character(tanged.points$Site)
+tanged.points$Context <- as.character(tanged.points$Context)
+
+### STAGE 3A: OUTLINE FILE CREATION ###
+
+outlinebp <- Out(backedpoints$coo, fac = backed.points)
+outlinebp <- filter(outlinebp, Burinated=="N") ### removal of burinated examples
+outlinebp <- filter(outlinebp, OTT=="Y") ### removal of cutting edges less than two-thirds
+
+outlinetp <- Out(tangedpoints$coo, fac = tanged.points)
+outlinetp <- filter(outlinetp, Burinated=="N") ### removal of burinated examples
+
+### STAGE 3B: EXAMINATION OF DATA (FOLLOWING SCREENING) ###
+
+unique(outlinebp$Site) 
+unique(outlinetp$Site) 
+
+unique(outlinebp$Context)
+unique(outlinetp$Context)
+
+unique(outlinebp$Country)
+unique(outlinetp$Country)
+
+summary(outlinebp$Country)
+summary(outlinetp$Country)
+
+summary(outlinebp$ATU)
+summary(outlinetp$ATU)
+
+summary(outlinebp$ATU2)
+summary(outlinetp$ATU2)
+
+summary(outlinebp$NAT)
+summary(outlinetp$NAT)
+
+### STAGE 4: OUTLINE ALTERATION ###
+
+outlinebp$coo[which(outlinebp$Retouch.position=="Right")] <- lapply(outlinebp$coo[which(outlinebp$Retouch.position=="Right")], coo_flipy) ### flip outline
+outlinebp$coo[which(outlinebp$Retouch.position=="Right")] <- lapply(outlinebp$coo[which(outlinebp$Retouch.position=="Right")], coo_rev) ### reverse landmark order
+
+### STAGE 5: OUTLINE NORMALISATION ###
+
+outlinebp <- coo_centre(outlinebp) ### centre outlines
+outlinetp <- coo_centre(outlinetp) ### centre outlines
+
+outlinebp <- coo_scale(outlinebp) ### scale outlines
+outlinetp <- coo_scale(outlinetp) ### scale outlines
+
+### STAGE 6: OUTLINE VISUALISATION ###
+
+stack(outlinebp, title = "") ### bp: visualisation (stack)
+stack(outlinetp, title = "") ### tp: visualisation (stack)
+
+panel(outlinebp) ### bp: visualisation (panel)
+panel(outlinetp) ### tp: visualisation (panel)
+
+### STAGE 7: HARMONIC CALIBRATION ###
+
+calibrate_deviations_efourier(outlinebp) ### bp: harmonic check
+calibrate_deviations_efourier(outlinetp) ### tp: harmonic check
+
+calibrate_harmonicpower_efourier(outlinebp) ### bp: harmonic check
+calibrate_harmonicpower_efourier(outlinetp) ### tp: harmonic check
+
+calibrate_reconstructions_efourier(outlinebp) ### bp: harmonic check
+calibrate_reconstructions_efourier(outlinetp) ### tp: harmonic check
+
+### STAGE 8: EFOURIER FILE CREATION ###
+
+efourierbp <- efourier(outlinebp, nb.h = 22,  norm = TRUE) ### bp: 22 harmonics for 99%
+efouriertp <- efourier(outlinetp, nb.h = 31, norm = TRUE) ### tp: 31 harmonics for 99%
+
+### STAGE 9: PCA FILE CREATION ###
+
+pcabp <- PCA(efourierbp) ### bp: creation of PCA
+pcatp <- PCA(efouriertp) ### tp: creation of PCA
+
+### STAGE 10: PCA VISUALISATION ###
+
+plot(pcabp, xax = 1, yax = 2, pos.shp = "XY", rug = FALSE, zoom = 1, lwd.shp = 1, size.shp = 0.5, amp.shp = 0.5, title = "")
+plot(pcatp, xax = 1, yax = 2, pos.shp = "XY", rug = FALSE, zoom = 1, lwd.shp = 1, size.shp = 0.5, amp.shp = 0.5, title = "") 
+
+plot(pcabp, xax = 1, yax = 2, fac = pcabp$ATU, rug = FALSE, title = "", points = FALSE, zoom = 2, morphospace = FALSE, chull = FALSE, chull.filled = FALSE, morphospaces = FALSE, ellipses = TRUE, conf.ellipses = 0.66) 
+plot(pcatp, xax = 1, yax = 2, fac = pcatp$ATU, rug = FALSE, title = "", points = FALSE, zoom = 4, morphospace = FALSE, chull = FALSE, chull.filled = FALSE, morphospaces = FALSE, ellipses = TRUE, conf.ellipses = 0.66) 
+
+plot(pcabp, xax = 1, yax = 2, fac = pcabp$ATU2, rug = FALSE, title = "", points = FALSE, rect.labelsgroups = TRUE, zoom = 2.5, cex.labelsgroups = 0.9, morphospace = TRUE, size.shp = 0.5, nr.shp = 8, chull = FALSE, chull.filled = FALSE, ellipses = TRUE, conf.ellipses = 0.33)
+plot(pcatp, xax = 1, yax = 2, fac = pcatp$ATU2, rug = FALSE, title = "", points = FALSE, rect.labelsgroups = TRUE, zoom = 2,  cex.labelsgroups = 0.9, morphospace = TRUE, size.shp = 0.5, nr.shp = 12, chull = FALSE, chull.filled = FALSE, ellipses = TRUE, conf.ellipses = 0.33)
+
+plot(pcabp, xax = 1, yax = 2, fac = pcabp$NAT, rug = FALSE, title = "", points = FALSE, zoom = 2, morphospace = TRUE, size.shp = 0.5, nr.shp = 8, chull = FALSE, chull.filled = FALSE, morphospaces = FALSE, ellipses = TRUE, conf.ellipses = 0.33)
+plot(pcatp, xax = 1, yax = 2, fac = pcatp$NAT, rug = FALSE, title = "", points = FALSE, zoom = 2.5, morphospace = TRUE, size.shp = 0.5, nr.shp = 8, chull = FALSE, chull.filled = FALSE, morphospaces = FALSE, ellipses = TRUE, conf.ellipses = 0.33)
+
+### STAGE 11: MANOVA AND PAIRWISE ANALYSES ###
+
+MANOVA(pcabp, fac = outlinebp$ATU) ### bp: MANOVA (ATU)
+MANOVA(pcatp, fac = outlinetp$ATU) ### tp: MANOVA (ATU)
+
+MANOVA_PW(pcabp, fac = outlinebp$ATU) ### bppw: MANOVA (ATU)
+MANOVA_PW(pcatp, fac = outlinetp$ATU) ### tppw: MANOVA (ATU)
+
+MANOVA(pcabp, fac = outlinebp$ATU2) ### bp: MANOVA (ATU2)
+MANOVA(pcatp, fac = outlinetp$ATU2) ### tp: MANOVA (ATU2)
+
+MANOVA_PW(pcabp, fac = outlinebp$ATU2) ### bppw: MANOVA (ATU)
+MANOVA_PW(pcatp, fac = outlinetp$ATU2) ### tppw: MANOVA (ATU)
+
+MANOVA(pcabp, fac = outlinebp$NAT) ### bp: MANOVA (NAT)
+MANOVA(pcatp, fac = outlinetp$NAT) ### tp: MANOVA (NAT)
+
+MANOVA_PW(pcabp, fac = outlinebp$NAT) ### bppw: MANOVA (NAT)
+MANOVA_PW(pcatp, fac = outlinetp$NAT) ### tppw: MANOVA (NAT)
+
+### STAGE 12: FURTHER EXPLORATORY ANALYSIS ###
+
+scree(pcabp, nax = 1:30) ### bp: scree table
+scree_plot(pcabp, nax = 1:30) ### bp: screeplot (25 PCS = 0.99 shape variance)
+
+scree(pcatp, nax = 1:30) ### tp: scree table
+scree_plot(pcatp, nax = 1:30) ### tp: screeplot (29 PCS = 0.99 shape variance)
+
+### STAGE 13: RPHYLIP TREE CONSTRUCTION ###
+### NOTE: FOR RCONTML TO WORK PHYLIP (FELSENSTEIN 1989, 2013) MUST ALSO BE INSTALLED ###
+### SEE ATTACHED TREE FILES TO AVOID THE RCONTML PROCEDURE ### 
+
+bppcamatrix <- as.matrix(pcabp$x[, 1:25])
+tppcamatrix <- as.matrix(pcatp$x[, 1:29])
+
+bpml <- Rcontml(bppcamatrix, path = NULL, global = FALSE, random.order = TRUE, random.addition = 1) ### bp: maximum likelihood
+tpml <- Rcontml(tppcamatrix, path = NULL, global = FALSE, random.order = TRUE, random.addition = 1) ### tp: maximum likelihood
+
+bpml
+tpml
+
+bpml <- read.tree(file = "bp_phylip/outtree") ### file read (alternative)
+tpml <- read.tree(file = "tp_phylip/outtree") ### file read (alternative)
+
+bpml <- reroot(bpml, 532) ### reroot
+tpml <- reroot(tpml, 537) ### reroot
+
+### STAGE 14: RPHYLIP TREE VISUALISATION ###
+
+ggtree(bpml)
+ggtree(tpml)
+
+ggtree(bpml) + theme_tree() + geom_nodepoint(size = 0.5) + geom_tiplab(size = 1, colour = "red")
+ggtree(tpml) + theme_tree() + geom_nodepoint(size = 0.5) + geom_tiplab(size = 1, colour = "red")
+
+bpmldata <- select(pcabp$fac, FN, Site, ATU, ATU2, NAT) %>% droplevels()
+tpmldata <- select(pcatp$fac, FN, Site, ATU, ATU2, NAT) %>% droplevels()
+
+ggtree(bpml) %<+% bpmldata + geom_tiplab(aes(colour = ATU, align = TRUE), size = 3)
+
+### CHANGE THE TERMS FROM BPMLDATA TO MATCH BPML (ACCENTS, GRAVES, ETC)
+### CHANGE THE TERMS FROM TPMLDATA TO MATCH TPML (ACCENTS, GRAVES, ETC)
+
+ggtree(tpml) %<+% tpmldata + geom_tiplab(aes(colour = ATU, align = TRUE), size = 3)
+
+ggtree(tpml) %<+% tpmldata + geom_point2(aes(shape = ATU, subset=(ATU %in% "Tanged Point Technocomplex")), size = 2, colour = "#bd284c") + labs(title = "ATU: Tanged Point Technocomplex")
+ggtree(tpml) %<+% tpmldata + geom_point2(aes(shape = NAT, subset=(NAT %in% "Bromme Point")), size = 2, colour = "#28bd33") + labs(title = "NAT: Bromme Point")
+ggtree(bpml) %<+% bpmldata + geom_point2(aes(shape = NAT, subset=(NAT %in% "Appelscha Point")), size = 2, colour = "#a6cee3") + labs(title = "NAT: Appelscha Point")
+
+tp1 <- ggtree(tpml) %<+% tpmldata + geom_point2(aes(shape = ATU, subset=(ATU %in% "Bromme")), size = 2, colour = "#ed980d") + labs(title = "Bromme")
+tp2 <- ggtree(tpml) %<+% tpmldata + geom_point2(aes(shape = ATU, subset=(ATU %in% "Upper Magdalenian")), size = 2, colour = "#ed980d") + labs(title = "Upper Magdalenian")
+tp3 <- ggtree(tpml) %<+% tpmldata + geom_point2(aes(shape = ATU, subset=(ATU %in% "Ahrensburgian")), size = 2, colour = "#ed980d") + labs(title = "Ahrensburgian")
+tp4 <- ggtree(tpml) %<+% tpmldata + geom_point2(aes(shape = ATU, subset=(ATU %in% "Lyngby")), size = 2, colour = "#ed980d") + labs(title = "Lyngby")
+tp5 <- ggtree(tpml) %<+% tpmldata + geom_point2(aes(shape = ATU, subset=(ATU %in% "Federmesser")), size = 2, colour = "#ed980d") + labs(title = "Federmesser")
+tp6 <- ggtree(tpml) %<+% tpmldata + geom_point2(aes(shape = ATU, subset=(ATU %in% "Azilian")), size = 2, colour = "#ed980d") + labs(title = "Azilian")
+tp7 <- ggtree(tpml) %<+% tpmldata + geom_point2(aes(shape = ATU, subset=(ATU %in% "Unspecified")), size = 2, colour = "#ed980d") + labs(title = "Unspecified")
+
+multiplot(tp1, tp2, tp3, tp4,tp5, tp6, tp7, ncol = 2) ### multiplot of ATU
+
+### STAGE 15: TANGLEGRAM FORMATION ###
+
+cmatrix <- inner_join(tpmldata, bpmldata, by = "Site")
+cmatrix <- select(cmatrix, Sitebp = FN.x, Sitetp = FN.y)
+
+
+#################################################################
+
+### OTHER FUNCTIONS ###
+
+### FILTERING BY A PARTICULAR ARTEFACT TYPE OR ORDER ###
+
+malauriepoints <- filter(outlinebp, Named_Artefact_Type=="Malaurie Point")
+germanypoints <- filter(outlinebp, Country=="Germany")
+
+### FILTERING BY QUANTITY ###
+
+outlinebp <- at_least(outlinebp, "ATU", 20) ### groups with at least 20 sample in ATU
+
+### SELF-ORGANISING MAPS ###
+
+grid.som <- somgrid(xdim = 8, ydim = 8, topo = "hexagonal")
+bpx <- scale(pcabp$x)
+tpx <- scale(pcatp$x)
+summary(bpx)
+summary(tpx)
+
+set.seed(222)
+bpmap <- som(bpx, grid = grid.som, alpha = c(0.05, 0.01), radius = 1)
+bpmap
+plot(bpmap, type = "changes")
+plot(bpmap,  main = "Self Organising Map (SOM) of PC variance")
+plot(bpmap, type = "count") # counts in each node
+plot(bpmap, main = "Self Organising Map (SOM) of PC variance", type = "mapping") # counts in each node
+
+tpmap <- som(tpx, grid = grid.som, alpha = c(0.05, 0.01), radius = 1)
+tpmap
+plot(tpmap, type = "changes")
+plot(tpmap,  main = "Self Organising Map (SOM) of PC variance")
+plot(tpmap, type = "count") # counts in each node
+plot(tpmap, main = "Self Organising Map (SOM) of PC variance", type = "mapping") # counts in each node
+

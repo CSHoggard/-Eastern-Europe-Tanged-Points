@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1571308206626.000,
+    "dirty" : false,
+    "encoding" : "ISO8859-1",
+    "folds" : "",
+    "hash" : "2444650652",
+    "id" : "A9D9EFC4",
+    "lastKnownWriteTime" : 1571309789,
+    "last_content_update" : 1571309789,
+    "path" : "C:/Users/cshog/Dropbox/CHRISTIAN/Academic Work/TP_BP_Project/data/rproject_analysis/master_script.R",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "181,0",
+        "scrollLine" : "172"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
